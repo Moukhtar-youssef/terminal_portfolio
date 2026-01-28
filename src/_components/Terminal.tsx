@@ -1,0 +1,220 @@
+"use client";
+
+import { useIsMobile } from "@/hooks/useMobile";
+import Link from "next/link";
+import React, { JSX, useEffect, useRef, useState } from "react";
+
+type Command = {
+  cmd: string;
+  desc: string;
+};
+
+type Response = {
+  cmd: string;
+  response: JSX.Element;
+};
+
+const Commands: Command[] = [
+  { cmd: "help", desc: "You obviously already know what this does" },
+  { cmd: "clear", desc: "Clear the terminal" },
+  { cmd: "whoami", desc: "About current user" },
+  { cmd: "whois", desc: "Who is Moukhtar" },
+  { cmd: "email", desc: "Send me an email" },
+  { cmd: "github", desc: "Show my github" },
+  // { cmd: "projects", desc: "Show what I have codded" },
+  { cmd: "history", desc: "View command history" },
+  { cmd: "gui", desc: "Go to my portfolio in GUI" },
+];
+
+const WELCOME_ASCII = [
+  "        __  ___            __   __    __                __  __                           ____",
+  "       /  |/  /___  __  __/ /__/ /_  / /_____ ______    \\ \\/ /___  __  _______________  / __/",
+  "      / /|_/ / __ \\/ / / / //_/ __ \\/ __/ __ `/ ___/     \\  / __ \\/ / / / ___/ ___/ _ \\/ /_  ",
+  "     / /  / / /_/ / /_/ / ,< / / / / /_/ /_/ / /         / / /_/ / /_/ (__  |__  )  __/ __/  ",
+  "    /_/  /_/\\____/\\__,_/_/|_/_/ /_/\\__/\\__,_/_/         /_/\\____/\\__,_/____/____/\\___/_/     ",
+  "                                                                                              ",
+];
+
+const WELCOME_ASCII_MOBILE = [
+  "    __  ___            __   __    __               ",
+  "   /  |/  /___  __  __/ /__/ /_  / /_____ ______ ",
+  "  / /|_/ / __ \\/ / / / //_/ __ \\/ __/ __ `/ ___/",
+  " / /  / / /_/ / /_/ / ,< / / / / /_/ /_/ / / ",
+  "/_/  /_/\\____/\\__,_/_/|_/_/ /_/\\__/\\__,_/_/",
+];
+
+const Terminal = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
+
+  const WELCOME_ASCII_SECTION = (
+    <div className="space-y-4">
+      <div className="typewriter">
+        <pre className="ascii-pre">
+          {(isMobile ? WELCOME_ASCII_MOBILE : WELCOME_ASCII).map(
+            (line, index) => {
+              return <div key={index}>{line} </div>;
+            },
+          )}
+        </pre>
+      </div>
+
+      <div>Welcome to my terminal portfolio. (Version 1.0.0)</div>
+
+      <div>
+        This project's source code can be found in this project's{" "}
+        <Link
+          href="https://github.com/Moukhtar-youssef/terminal_portfolio"
+          target="_blank"
+          className="underline"
+        >
+          GitHub repo
+        </Link>
+      </div>
+
+      <div>
+        For a list of available commands, type <code>help</code>.
+      </div>
+    </div>
+  );
+
+  const [input, setInput] = useState("");
+  const [outputs, setOutputs] = useState<Response[]>([
+    {
+      cmd: "visitor@terminal.Moukhtar.dev:~$ welcome",
+      response: WELCOME_ASCII_SECTION,
+    },
+  ]);
+  const [cmdHistory, setCmdHistory] = useState<string[]>(["welcome"]);
+  const [pointer, setPointer] = useState(-1);
+
+  useEffect(() => {
+    const focusInput = () => inputRef.current?.focus();
+    document.addEventListener("click", focusInput);
+    return () => document.removeEventListener("click", focusInput);
+  }, []);
+
+  const handleResponse = (cmd: string): JSX.Element => {
+    switch (cmd.trim()) {
+      case "help":
+        return (
+          <>
+            {Commands.map((c) => (
+              <div key={c.cmd} className="grid grid-cols-[120px_1fr]">
+                <span>{c.cmd}</span>
+                <span>- {c.desc}</span>
+              </div>
+            ))}
+          </>
+        );
+
+      case "clear":
+        setOutputs([]);
+        return <div />;
+
+      case "whoami":
+        return <span>Visitor</span>;
+
+      case "whois":
+        return (
+          <>
+            <div>
+              Hi, My name is <strong>Moukhtar youssef</strong>!
+            </div>
+            <div>I am a full-stack developer based in Szeged,Hungary</div>
+          </>
+        );
+
+      case "welcome":
+        return WELCOME_ASCII_SECTION;
+
+      case "email":
+        window.open("mailto:" + "moukhtar.youssef06@gmail.com", "_self");
+        return <span>moukhtar.youssef06@gmail.com </span>;
+
+      case "github":
+        window.open("https://github.com/Moukhtar-youssef", "_blank");
+        return <span>https://github.com/Moukhtar-youssef</span>;
+
+      case "history":
+        return <>{cmdHistory.map((c) => c).join("\n")}</>;
+
+      case "gui":
+        return <span>Sorry the gui website is still under development</span>;
+
+      case "":
+        return <div />;
+
+      default:
+        return <span>Command not found: {cmd}</span>;
+    }
+  };
+
+  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    setCmdHistory((prev) => [...prev, input]);
+    setOutputs((prev) => [
+      ...prev,
+      {
+        cmd: `visitor@terminal.Moukhtar.dev:~$ ${input}`,
+        response: handleResponse(input),
+      },
+    ]);
+    setInput("");
+    setPointer(-1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowUp") {
+      if (pointer + 1 >= cmdHistory.length) return;
+      const newPointer = pointer + 1;
+      setPointer(newPointer);
+      setInput(cmdHistory[cmdHistory.length - 1 - newPointer]);
+    }
+
+    if (e.key === "ArrowDown") {
+      if (pointer <= 0) {
+        setPointer(-1);
+        setInput("");
+        return;
+      }
+      const newPointer = pointer - 1;
+      setPointer(newPointer);
+      setInput(cmdHistory[cmdHistory.length - 1 - newPointer]);
+    }
+  };
+
+  return (
+    <div className="container px-5 py-2" ref={containerRef}>
+      <div className="terminal">
+        {outputs.map((output, index) => (
+          <div key={index} className="mb-4">
+            <div>{output.cmd}</div>
+            <div>{output.response}</div>
+          </div>
+        ))}
+      </div>
+
+      <form className="mt-2 flex items-center" onSubmit={handleSubmit}>
+        <span>visitor@terminal.Moukhtar.dev:~$ </span>
+        <span> </span>
+        <input
+          ref={inputRef}
+          title="terminal-input"
+          type="text"
+          autoComplete="off"
+          spellCheck={false}
+          autoFocus
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          className="terminal-input cursor pl-2"
+        />
+      </form>
+    </div>
+  );
+};
+
+export default Terminal;

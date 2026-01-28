@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  font-family: "Fira Mono", "Courier New", monospace;
+  background-color: #0f111a;
+  color: #c5c6c7;
+  margin: 0;
+  padding: 0;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+input:focus {
+  outline: none;
+  box-shadow: none;
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+.container {
+  max-width: 100%;
+  padding: 1rem;
+  overflow: hidden;
+}
+.command-output {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.terminal {
+  background-color: #0f111a;
+  scroll-behavior: smooth;
+}
+.terminal::-webkit-scrollbar {
+  width: 8px;
+}
+.terminal::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+.terminal::-webkit-scrollbar-track {
+  background: transparent;
+}
+.terminal-input {
+  background: transparent;
+  border: none;
+  color: #c5c6c7;
+  font-family: "Fira Mono", monospace;
+  font-size: 0.95rem;
+  width: 100%;
+}
+.cursor::after {
+  content: "|";
+  animation: blink 1s step-start infinite;
+  color: #00ff7f;
+  margin-left: 2px;
+}
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+.ascii-pre {
+  font-family: "Fira Mono", monospace;
+  color: #00ff7f;
+  white-space: pre;
+  line-height: 1.1;
+  overflow-x: auto;
+  max-width: 100%;
+}
+.terminal a {
+  color: #00bfff;
+  text-decoration: underline;
+}
+.terminal a:hover {
+  color: #00ff7f;
+  text-shadow: 0 0 4px #00ff7f;
+}
+@media screen and (max-width: 640px) {
+  .ascii-pre {
+    font-size: 0.65rem;
+    line-height: 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 0.15em solid #00ff7f;
+  animation: typewriter 2s steps(40) 1 forwards;
 }
