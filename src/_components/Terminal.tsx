@@ -9,6 +9,14 @@ type Command = {
   desc: string;
 };
 
+type Project = {
+  name: string;
+  description: string;
+  github: string;
+  preview: string | null;
+  number: number;
+};
+
 type Response = {
   cmd: string;
   response: JSX.Element;
@@ -24,6 +32,32 @@ const Commands: Command[] = [
   // { cmd: "projects", desc: "Show what I have codded" },
   { cmd: "history", desc: "View command history" },
   { cmd: "gui", desc: "Go to my portfolio in GUI" },
+];
+
+const Projects: Project[] = [
+  {
+    name: "Terminal_Portfolio",
+    description: "A terminal design website acting as a portfolio",
+    github: "https://github.com/Moukhtar-youssef/terminal_portfolio",
+    preview: null,
+    number: 2,
+  },
+  {
+    name: "Task_Manager_CLI",
+    description:
+      "A modern CLI-based task management application built in Go, using the Cobra framework. Task_Tracker lets you quickly manage your to-do list from the terminal — add, edit, delete, and update tasks with ease.",
+    github: "https://github.com/Moukhtar-youssef/Task_Manager_CLI",
+    preview: null,
+    number: 1,
+  },
+  {
+    name: "Expense_Tracker_CLI",
+    description:
+      "A powerful and minimal command-line tool to track your expenses, budgets, and summaries right from the terminal.",
+    github: "https://github.com/Moukhtar-youssef/Expense-Tracker/tree/main",
+    preview: null,
+    number: 3,
+  },
 ];
 
 const WELCOME_ASCII = [
@@ -138,13 +172,16 @@ const Terminal = () => {
         return <span>https://github.com/Moukhtar-youssef</span>;
 
       case "history":
-        return <>{cmdHistory.map((c) => c).join("\n")}</>;
+        return (
+          <>
+            {cmdHistory.map((c, index) => (
+              <div key={index}>{c}</div>
+            ))}
+          </>
+        );
 
       case "gui":
         return <span>Sorry the gui website is still under development</span>;
-
-      case "":
-        return <div />;
 
       default:
         return <span>Command not found: {cmd}</span>;
