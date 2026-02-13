@@ -27,7 +27,7 @@ src/
 
 ### Prerequisites
 - Node.js 16+
-- npm or yarn
+- bun (package manager)
 
 ### Installation
 
