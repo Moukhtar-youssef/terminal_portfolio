@@ -2,7 +2,8 @@
 
 import { useIsMobile } from "@/hooks/useMobile";
 import Link from "next/link";
-import React, { JSX, useEffect, useRef, useState } from "react";
+import type React from "react";
+import { type JSX, useEffect, useRef, useState } from "react";
 
 type Command = {
   cmd: string;
@@ -20,6 +21,7 @@ type Project = {
 type Response = {
   cmd: string;
   response: JSX.Element;
+  id: string;
 };
 
 const Commands: Command[] = [
@@ -27,9 +29,13 @@ const Commands: Command[] = [
   { cmd: "clear", desc: "Clear the terminal" },
   { cmd: "whoami", desc: "About current user" },
   { cmd: "whois", desc: "Who is Moukhtar" },
+  {
+    cmd: "welcome",
+    desc: "Show the welcome message (don't worry you can always find it in the command history)",
+  },
   { cmd: "email", desc: "Send me an email" },
   { cmd: "github", desc: "Show my github" },
-  // { cmd: "projects", desc: "Show what I have codded" },
+  { cmd: "projects", desc: "Show what I have codded" },
   { cmd: "history", desc: "View command history" },
   { cmd: "gui", desc: "Go to my portfolio in GUI" },
 ];
@@ -39,7 +45,7 @@ const Projects: Project[] = [
     name: "Terminal_Portfolio",
     description: "A terminal design website acting as a portfolio",
     github: "https://github.com/Moukhtar-youssef/terminal_portfolio",
-    preview: null,
+    preview: "https://terminal-portfolio-one-tau.vercel.app/",
     number: 2,
   },
   {
@@ -86,11 +92,9 @@ const Terminal = () => {
     <div className="space-y-4">
       <div className="typewriter">
         <pre className="ascii-pre">
-          {(isMobile ? WELCOME_ASCII_MOBILE : WELCOME_ASCII).map(
-            (line, index) => {
-              return <div key={index}>{line} </div>;
-            },
-          )}
+          {(isMobile ? WELCOME_ASCII_MOBILE : WELCOME_ASCII).map((line) => {
+            return <div key={crypto.randomUUID()}>{line} </div>;
+          })}
         </pre>
       </div>
 
@@ -118,6 +122,7 @@ const Terminal = () => {
     {
       cmd: "visitor@terminal.Moukhtar.dev:~$ welcome",
       response: WELCOME_ASCII_SECTION,
+      id: crypto.randomUUID(),
     },
   ]);
   const [cmdHistory, setCmdHistory] = useState<string[]>(["welcome"]);
@@ -145,7 +150,7 @@ const Terminal = () => {
 
       case "clear":
         setOutputs([]);
-        return <div />;
+        return <span></span>;
 
       case "whoami":
         return <span>Visitor</span>;
@@ -174,8 +179,8 @@ const Terminal = () => {
       case "history":
         return (
           <>
-            {cmdHistory.map((c, index) => (
-              <div key={index}>{c}</div>
+            {cmdHistory.map((c) => (
+              <div key={crypto.randomUUID()}>{c}</div>
             ))}
           </>
         );
@@ -183,6 +188,35 @@ const Terminal = () => {
       case "gui":
         return <span>Sorry the gui website is still under development</span>;
 
+      case "projects": {
+        const sortedProjects = Projects.sort((a, b) => a.number - b.number);
+        return (
+          <>
+            {sortedProjects.map((p) => (
+              <div
+                key={p.name}
+                className="mb-4 border rounded-md border-gray-500 p-4"
+              >
+                <div className="text-lg font-semibold">{p.name}</div>
+                <div>{p.description}</div>
+                <div>
+                  <a href={p.github} target="_blank" className="underline">
+                    GitHub Repo
+                  </a>
+                  {p.preview && (
+                    <>
+                      {" | "}
+                      <a href={p.preview} target="_blank" className="underline">
+                        Live Preview
+                      </a>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </>
+        );
+      }
       default:
         return <span>Command not found: {cmd}</span>;
     }
@@ -197,6 +231,7 @@ const Terminal = () => {
       {
         cmd: `visitor@terminal.Moukhtar.dev:~$ ${input}`,
         response: handleResponse(input),
+        id: crypto.randomUUID(),
       },
     ]);
     setInput("");
@@ -221,20 +256,41 @@ const Terminal = () => {
       setPointer(newPointer);
       setInput(cmdHistory[cmdHistory.length - 1 - newPointer]);
     }
+
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const foundCmd = Commands.find((c) => c.cmd.startsWith(input));
+      if (foundCmd) {
+        setInput(foundCmd.cmd);
+      }
+    }
   };
 
   return (
     <div className="container px-5 py-2" ref={containerRef}>
       <div className="terminal">
-        {outputs.map((output, index) => (
-          <div key={index} className="mb-4">
+        {outputs.map((output) => (
+          <div key={output.id} className="mb-4">
             <div>{output.cmd}</div>
             <div>{output.response}</div>
           </div>
         ))}
       </div>
 
-      <form className="mt-2 flex items-center" onSubmit={handleSubmit}>
+      <form
+        className="mt-2 flex items-center"
+        onSubmit={handleSubmit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            inputRef.current?.focus();
+          }
+        }}
+        onKeyUp={(e) => {
+          if (e.key === "Enter") {
+            inputRef.current?.focus();
+          }
+        }}
+      >
         <span>visitor@terminal.Moukhtar.dev:~$ </span>
         <span> </span>
         <input
@@ -243,7 +299,6 @@ const Terminal = () => {
           type="text"
           autoComplete="off"
           spellCheck={false}
-          autoFocus
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
